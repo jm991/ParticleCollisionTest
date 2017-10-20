@@ -33,7 +33,7 @@ public class ParticleCollisionHelper : MonoBehaviour
 
                 float rotationCorrection = 1f;
                 Vector3 pivot = particleSystemRenderer.pivot;
-                float size = curParticle.GetCurrentSize(particleSys);
+                Vector3 size = curParticle.GetCurrentSize3D(particleSys);
 
                 Transform curParent = this.transform;
                 float uniformScale = 1f;
@@ -86,10 +86,10 @@ public class ParticleCollisionHelper : MonoBehaviour
                 curGO.transform.Rotate(new Vector3(curParticle.rotation3D.x, curParticle.rotation3D.y, curParticle.rotation3D.z * rotationCorrection));
 
                 // Apply scale
-                curGO.transform.localScale = new Vector3(size, size, size);
+                curGO.transform.localScale = size;
 
                 // Apply pivot
-                pivot *= size;
+                pivot = new Vector3(pivot.x * size.x, pivot.y * size.y, pivot.z * size.z);
                 curGO.transform.position += (curGO.transform.right * pivot.x);
                 curGO.transform.position += (curGO.transform.up * pivot.y);
                 curGO.transform.position += (curGO.transform.forward * pivot.z * -1f);
