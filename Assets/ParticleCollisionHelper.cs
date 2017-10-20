@@ -2,7 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class ParticleCollisionHelper : MonoBehaviour {
+public class ParticleCollisionHelper : MonoBehaviour
+{
     public bool isPaused = false;
     public ParticleSystem particleSys;
     public ParticleSystemRenderer particleSystemRenderer;
@@ -11,17 +12,17 @@ public class ParticleCollisionHelper : MonoBehaviour {
     public ParticleSystem.Particle[] particles;
     public Material material;
 
-	// Use this for initialization
-	void Start()
+    // Use this for initialization
+    void Start()
     {
         particleSys = this.GetComponent<ParticleSystem>();
         particleSystemRenderer = particleSys.GetComponent<ParticleSystemRenderer>();
         cam = Camera.main;
         gameObjects = new Dictionary<GameObject, ParticleSystem.Particle>();
-	}
-	
-	// Update is called once per frame
-	void Update()
+    }
+    
+    // Update is called once per frame
+    void Update()
     {
         if (isPaused)
         {
@@ -43,7 +44,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
                 }
 
                 // Apply position
-                switch (particleSys.simulationSpace)
+                switch (particleSys.main.simulationSpace)
                 {
                     case ParticleSystemSimulationSpace.Local:
                         curGO.transform.SetParent(particleSys.gameObject.transform);
@@ -75,7 +76,6 @@ public class ParticleCollisionHelper : MonoBehaviour {
                         pivot.y = particleSystemRenderer.pivot.z * -1f;
 
                         pivot *= curParticle.GetCurrentSize(particleSys);
-
                         break;
                     default:
                         Debug.LogError("Unsupported render mode.", this);
@@ -95,7 +95,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
                 curGO.transform.position += (curGO.transform.forward * pivot.z * -1f);
             }
         }
-	}
+    }
 
     public void Pause()
     {
@@ -143,6 +143,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
                 GameObject curGO = curPair.Key;
                 Destroy(curGO);
             }
+
             gameObjects.Clear();
         }
     }
