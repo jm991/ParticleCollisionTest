@@ -72,7 +72,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
 
                         // For mesh pivots, Z is Y and Y is Z
                         pivot.z = particleSystemRenderer.pivot.y * -1f;
-                        pivot.y = particleSystemRenderer.pivot.z;
+                        pivot.y = particleSystemRenderer.pivot.z * -1f;
 
                         break;
                     default:
@@ -89,7 +89,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
                 // Apply pivot
                 pivot *= size;
                 curGO.transform.position += (curGO.transform.right * pivot.x);
-                curGO.transform.position += (curGO.transform.up * pivot.y * -1f);
+                curGO.transform.position += (curGO.transform.up * pivot.y);
                 curGO.transform.position += (curGO.transform.forward * pivot.z * -1f);
             }
         }
@@ -97,7 +97,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
 
     public void Pause()
     {
-        if (this.enabled)
+        if (this.gameObject.activeSelf)
         {
             isPaused = true;
             particleSys.Pause(true);
@@ -131,7 +131,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
 
     public void Play()
     {
-        if (this.enabled)
+        if (this.gameObject.activeSelf)
         {
             isPaused = false;
             particleSys.Play(true);
