@@ -74,6 +74,8 @@ public class ParticleCollisionHelper : MonoBehaviour {
                         pivot.z = particleSystemRenderer.pivot.y * -1f;
                         pivot.y = particleSystemRenderer.pivot.z * -1f;
 
+                        pivot *= curParticle.GetCurrentSize(particleSys);
+
                         break;
                     default:
                         Debug.LogError("Unsupported render mode.", this);

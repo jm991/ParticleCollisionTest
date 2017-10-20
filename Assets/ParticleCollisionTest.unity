@@ -563,7 +563,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 0
+  randomSeed: 63050896
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -710,7 +710,7 @@ ParticleSystem:
       maxColor: {r: 0, g: 0, b: 0, a: 1}
     startSize:
       minMaxState: 3
-      scalar: 1.5
+      scalar: 1
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -728,7 +728,7 @@ ParticleSystem:
         m_Curve:
         - serializedVersion: 2
           time: 0
-          value: 0.33333334
+          value: 1
           inSlope: 0
           outSlope: 0
           tangentMode: 0
@@ -3493,7 +3493,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!199 &1119335085
 ParticleSystemRenderer:
   serializedVersion: 3
@@ -3600,7 +3600,7 @@ ParticleSystem:
   moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 0
+  randomSeed: -1307419318
   InitialModule:
     serializedVersion: 3
     enabled: 1
