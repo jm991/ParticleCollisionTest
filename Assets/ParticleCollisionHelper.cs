@@ -128,9 +128,13 @@ public class ParticleCollisionHelper : MonoBehaviour
                 {
                     Renderer rend = hit.transform.GetComponent<Renderer>();
                     MeshCollider meshCollider = hit.collider as MeshCollider;
+                    meshCollider.convex = false;
 
                     if (rend == null || rend.sharedMaterial == null || rend.sharedMaterial.mainTexture == null || meshCollider == null)
+                    {
+                        Debug.Log("HIT! " + hitParticleCollider.particleSys.name, this);
                         return;
+                    }
 
                     Texture2D tex = rend.material.mainTexture as Texture2D;
                     Vector2 pixelUV = hit.textureCoord;
