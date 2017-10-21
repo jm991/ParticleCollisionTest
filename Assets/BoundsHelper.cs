@@ -4,23 +4,23 @@ using UnityEngine;
 
 public static class BoundsHelper
 {
-    public static Bounds GetGameObjectHierarchyBounds(GameObject go)
+    public static Bounds GetGameObjectHierarchyBounds(GameObject go, Vector3 center)
     {
         Renderer[] renderers = go.GetComponentsInChildren<Renderer>();
 
-        return EncapsulateBounds(renderers);
+        return EncapsulateBounds(renderers, center);
     }
 
-    public static Bounds GetGameObjectListBounds(List<GameObject> gameObjects)
+    public static Bounds GetGameObjectListBounds(List<GameObject> gameObjects, Vector3 center)
     {
         Renderer[] renderers = gameObjects.Select(x => x.GetComponent<Renderer>()).ToArray();
 
-        return EncapsulateBounds(renderers);
+        return EncapsulateBounds(renderers, center);
     }
 
-    private static Bounds EncapsulateBounds(Renderer[] renderers)
+    private static Bounds EncapsulateBounds(Renderer[] renderers, Vector3 center)
     {
-        Bounds bounds = new Bounds();
+        Bounds bounds = new Bounds(center, Vector3.one);
 
         foreach (Renderer renderer in renderers)
         {

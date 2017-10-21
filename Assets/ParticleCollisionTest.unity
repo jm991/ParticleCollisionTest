@@ -456,7 +456,9 @@ MonoBehaviour:
   particleSys: {fileID: 0}
   particleSystemRenderer: {fileID: 0}
   cam: {fileID: 0}
+  particleColliders: []
   material: {fileID: 0}
+  hitTestAlphaCutoff: 0
 --- !u!199 &1062035451
 ParticleSystemRenderer:
   serializedVersion: 3
@@ -504,7 +506,7 @@ ParticleSystemRenderer:
   m_Pivot: {x: 0.2, y: 0.4, z: 0.6}
   m_UseCustomVertexStreams: 0
   m_VertexStreams: 0001030405
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
   m_Mesh1: {fileID: 0}
   m_Mesh2: {fileID: 0}
   m_Mesh3: {fileID: 0}
@@ -563,7 +565,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 1458663353
+  randomSeed: -169831127
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -3508,7 +3510,7 @@ ParticleSystemRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8e4abc6a5b789e04e8550214251a32c3, type: 2}
+  - {fileID: 2100000, guid: ebbf1a0b70b57c4469bca46f25d33c03, type: 2}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -3600,7 +3602,7 @@ ParticleSystem:
   moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: -1307419318
+  randomSeed: -462018243
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -4101,7 +4103,7 @@ ParticleSystem:
         m_RotationOrder: 4
     rateOverDistance:
       minMaxState: 0
-      scalar: 0
+      scalar: 5
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -6412,7 +6414,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1119335084}
   m_LocalRotation: {x: 0, y: 0, z: 1, w: -0.00000016292068}
-  m_LocalPosition: {x: -8.2, y: 3.8, z: 0}
+  m_LocalPosition: {x: -10.1, y: -12.3, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 0}
@@ -6433,7 +6435,9 @@ MonoBehaviour:
   particleSys: {fileID: 0}
   particleSystemRenderer: {fileID: 0}
   cam: {fileID: 0}
+  particleColliders: []
   material: {fileID: 0}
+  hitTestAlphaCutoff: 0
 --- !u!1 &1291887730
 GameObject:
   m_ObjectHideFlags: 0

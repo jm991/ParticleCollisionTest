@@ -160,7 +160,7 @@ public class ParticleCollisionHelper : MonoBehaviour
 
             for (int i = 0; i < particleCount; i++)
             {
-                GameObject go = Instantiate(Resources.Load<GameObject>("Quad"));
+                GameObject go = Instantiate(Resources.Load<GameObject>("ParticleCollider"));
                 MeshFilter meshFilter = go.GetComponent<MeshFilter>();
                 MeshCollider meshCollider = go.GetComponent<MeshCollider>();
                 Renderer rend = go.GetComponent<Renderer>();
@@ -211,7 +211,7 @@ public class ParticleCollisionHelper : MonoBehaviour
         {
             /// Draw bounds based on <see cref="particleColliders"/> 
             Gizmos.color = Color.green;
-            Bounds bounds = BoundsHelper.GetGameObjectListBounds(particleColliders.Select(x => x.gameObject).ToList());
+            Bounds bounds = BoundsHelper.GetGameObjectListBounds(particleColliders.Select(x => x.gameObject).ToList(), this.transform.position);
             Gizmos.DrawWireCube(bounds.center, bounds.size);
         }
     }
