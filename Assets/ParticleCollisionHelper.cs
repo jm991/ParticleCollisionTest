@@ -2,7 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class ParticleCollisionHelper : MonoBehaviour {
+public class ParticleCollisionHelper : MonoBehaviour
+{
     public bool isPaused = false;
     public ParticleSystem particleSys;
     public ParticleSystemRenderer particleSystemRenderer;
@@ -11,17 +12,17 @@ public class ParticleCollisionHelper : MonoBehaviour {
     public ParticleSystem.Particle[] particles;
     public Material material;
 
-	// Use this for initialization
-	void Start()
+    // Use this for initialization
+    void Start()
     {
         particleSys = this.GetComponent<ParticleSystem>();
         particleSystemRenderer = particleSys.GetComponent<ParticleSystemRenderer>();
         cam = Camera.main;
         gameObjects = new Dictionary<GameObject, ParticleSystem.Particle>();
-	}
-	
-	// Update is called once per frame
-	void Update()
+    }
+    
+    // Update is called once per frame
+    void Update()
     {
         if (isPaused)
         {
@@ -32,7 +33,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
 
                 float rotationCorrection = 1f;
                 Vector3 pivot = particleSystemRenderer.pivot;
-                float size = curParticle.GetCurrentSize(particleSys);
+                Vector3 size = curParticle.GetCurrentSize3D(particleSys);
 
                 Transform curParent = this.transform;
                 float uniformScale = 1f;
@@ -43,7 +44,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
                 }
 
                 // Apply position
-                switch (particleSys.simulationSpace)
+                switch (particleSys.main.simulationSpace)
                 {
                     case ParticleSystemSimulationSpace.Local:
                         curGO.transform.SetParent(particleSys.gameObject.transform);
@@ -72,8 +73,9 @@ public class ParticleCollisionHelper : MonoBehaviour {
 
                         // For mesh pivots, Z is Y and Y is Z
                         pivot.z = particleSystemRenderer.pivot.y * -1f;
-                        pivot.y = particleSystemRenderer.pivot.z;
+                        pivot.y = particleSystemRenderer.pivot.z * -1f;
 
+                        pivot *= curParticle.GetCurrentSize(particleSys);
                         break;
                     default:
                         Debug.LogError("Unsupported render mode.", this);
@@ -84,20 +86,20 @@ public class ParticleCollisionHelper : MonoBehaviour {
                 curGO.transform.Rotate(new Vector3(curParticle.rotation3D.x, curParticle.rotation3D.y, curParticle.rotation3D.z * rotationCorrection));
 
                 // Apply scale
-                curGO.transform.localScale = new Vector3(size, size, size);
+                curGO.transform.localScale = size;
 
                 // Apply pivot
-                pivot *= size;
+                pivot = new Vector3(pivot.x * size.x, pivot.y * size.y, pivot.z * size.z);
                 curGO.transform.position += (curGO.transform.right * pivot.x);
-                curGO.transform.position += (curGO.transform.up * pivot.y * -1f);
+                curGO.transform.position += (curGO.transform.up * pivot.y);
                 curGO.transform.position += (curGO.transform.forward * pivot.z * -1f);
             }
         }
-	}
+    }
 
     public void Pause()
     {
-        if (this.enabled)
+        if (this.gameObject.activeSelf)
         {
             isPaused = true;
             particleSys.Pause(true);
@@ -131,7 +133,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
 
     public void Play()
     {
-        if (this.enabled)
+        if (this.gameObject.activeSelf)
         {
             isPaused = false;
             particleSys.Play(true);
@@ -141,6 +143,7 @@ public class ParticleCollisionHelper : MonoBehaviour {
                 GameObject curGO = curPair.Key;
                 Destroy(curGO);
             }
+
             gameObjects.Clear();
         }
     }
