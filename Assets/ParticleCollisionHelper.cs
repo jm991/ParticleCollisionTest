@@ -11,13 +11,13 @@ using System.Linq;
 public class ParticleCollisionHelper : MonoBehaviour
 {
     public bool isPaused = false;
+    public Camera cam;
+    public float hitTestAlphaCutoff = 0;
+
+    // TODO: put into a class to create per particle system
     public ParticleSystem particleSys;
     public ParticleSystemRenderer particleSystemRenderer;
-    public Camera cam;
     public List<ParticleCollider> particleColliders;
-    public ParticleSystem.Particle[] particles;
-    public Material material;
-    public float hitTestAlphaCutoff = 0;
 
     #region Unity event functions
 
@@ -90,7 +90,7 @@ public class ParticleCollisionHelper : MonoBehaviour
 
     private void CreateParticleColliders()
     {
-        particles = new ParticleSystem.Particle[particleSys.particleCount];
+        ParticleSystem.Particle[] particles = new ParticleSystem.Particle[particleSys.particleCount];
         int particleCount = particleSys.GetParticles(particles);
 
         for (int i = 0; i < particleCount; i++)
