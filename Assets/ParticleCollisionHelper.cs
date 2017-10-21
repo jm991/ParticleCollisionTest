@@ -10,18 +10,6 @@ using System.Linq;
 /// </summary>
 public class ParticleCollisionHelper : MonoBehaviour
 {
-    public class ParticleCollider : MonoBehaviour
-    {
-        public ParticleSystem.Particle particle;
-        public ParticleSystem particleSys;
-
-        public ParticleCollider(ParticleSystem.Particle particle, ParticleSystem particleSys)
-        {
-            this.particle = particle;
-            this.particleSys = particleSys;
-        }
-    }
-
     public bool isPaused = false;
     public ParticleSystem particleSys;
     public ParticleSystemRenderer particleSystemRenderer;
@@ -30,6 +18,8 @@ public class ParticleCollisionHelper : MonoBehaviour
     public ParticleSystem.Particle[] particles;
     public Material material;
     public float hitTestAlphaCutoff = 0;
+
+    #region Unity event functions
 
     // Use this for initialization
     void Start()
@@ -45,112 +35,30 @@ public class ParticleCollisionHelper : MonoBehaviour
     {
         if (isPaused)
         {
-            foreach (ParticleCollider curParticleCollider in particleColliders)
-            {
-                GameObject curGO = curParticleCollider.gameObject;
-                ParticleSystem.Particle curParticle = curParticleCollider.particle;
+            ReconstructParticleSystem();
 
-                float rotationCorrection = 1f;
-                Vector3 pivot = particleSystemRenderer.pivot;
-                Vector3 size = curParticle.GetCurrentSize3D(particleSys);
-
-                Transform curParent = this.transform;
-                float uniformScale = 1f;
-                while (curParent != null)
-                {
-                    uniformScale *= curParent.localScale.x;
-                    curParent = curParent.parent;
-                }
-
-                // Apply position
-                switch (particleSys.main.simulationSpace)
-                {
-                    case ParticleSystemSimulationSpace.Local:
-                        curGO.transform.SetParent(particleSys.gameObject.transform);
-                        curGO.transform.localPosition = curParticle.position;
-
-                        pivot *= uniformScale;
-                        break;
-                    case ParticleSystemSimulationSpace.World:
-                        curGO.transform.SetParent(null);
-                        curGO.transform.position = curParticle.position;
-
-                        size *= uniformScale;
-                        break;
-                }
-
-                switch (particleSystemRenderer.renderMode)
-                {
-                    case ParticleSystemRenderMode.Billboard:
-                        // Billboard to camera
-                        curGO.transform.LookAt(curGO.transform.position + cam.transform.rotation * Vector3.forward, cam.transform.rotation * Vector3.up);
-
-                        rotationCorrection = -1f;
-                        break;
-                    case ParticleSystemRenderMode.Mesh:
-                        curGO.transform.rotation = Quaternion.identity;
-
-                        // For mesh pivots, Z is Y and Y is Z
-                        pivot.z = particleSystemRenderer.pivot.y * -1f;
-                        pivot.y = particleSystemRenderer.pivot.z * -1f;
-
-                        pivot *= curParticle.GetCurrentSize(particleSys);
-                        break;
-                    default:
-                        Debug.LogError("Unsupported render mode.", this);
-                        break;
-                }
-                
-                // Apply rotation
-                curGO.transform.Rotate(new Vector3(curParticle.rotation3D.x, curParticle.rotation3D.y, curParticle.rotation3D.z * rotationCorrection));
-
-                // Apply scale
-                curGO.transform.localScale = size;
-
-                // Apply pivot
-                pivot = new Vector3(pivot.x * size.x, pivot.y * size.y, pivot.z * size.z);
-                curGO.transform.position += (curGO.transform.right * pivot.x);
-                curGO.transform.position += (curGO.transform.up * pivot.y);
-                curGO.transform.position += (curGO.transform.forward * pivot.z * -1f);
-            }
-            
-
-            // Selection (accounts for transparency)
-            if (Input.GetMouseButton(0))
-            {
-                RaycastHit hit;
-                if (!Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hit))
-                    return;
-                
-                ParticleCollider hitParticleCollider = hit.transform.gameObject.GetComponent<ParticleCollider>();
-
-                if (hitParticleCollider != null && hitParticleCollider.particleSys == particleSys)
-                {
-                    Renderer rend = hit.transform.GetComponent<Renderer>();
-                    MeshCollider meshCollider = hit.collider as MeshCollider;
-                    meshCollider.convex = false;
-
-                    if (rend == null || rend.sharedMaterial == null || rend.sharedMaterial.mainTexture == null || meshCollider == null)
-                    {
-                        Debug.Log("HIT! " + hitParticleCollider.particleSys.name, this);
-                        return;
-                    }
-
-                    Texture2D tex = rend.material.mainTexture as Texture2D;
-                    Vector2 pixelUV = hit.textureCoord;
-                    pixelUV.x *= tex.width;
-                    pixelUV.y *= tex.height;
-
-                    Color hitColor = tex.GetPixelForced((int)pixelUV.x, (int)pixelUV.y);
-                    Debug.Log("Raycast hit color: " + hitColor, this);
-                    if (hitColor.a > hitTestAlphaCutoff)
-                    {
-                        Debug.Log("HIT! " + hitParticleCollider.particleSys.name, this);
-                    }
-                }
-            }
+            TestSelection();
         }
     }
+
+    void OnDrawGizmos()
+    {
+        if (isPaused)
+        {
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            Debug.DrawRay(ray.origin, ray.direction.normalized * cam.farClipPlane, Color.green);
+
+            /// Draw bounds based on <see cref="particleColliders"/> 
+            Gizmos.color = Color.green;
+            Bounds bounds = BoundsHelper.GetGameObjectListBounds(particleColliders.Select(x => x.gameObject).ToList(), this.transform.position);
+            Gizmos.DrawWireCube(bounds.center, bounds.size);
+        }
+    }
+
+    #endregion
+
+
+    #region Event functions
 
     public void Pause()
     {
@@ -159,38 +67,10 @@ public class ParticleCollisionHelper : MonoBehaviour
             isPaused = true;
             particleSys.Pause(true);
 
-            particles = new ParticleSystem.Particle[particleSys.particleCount];
-            int particleCount = particleSys.GetParticles(particles);
-
-            for (int i = 0; i < particleCount; i++)
-            {
-                GameObject go = Instantiate(Resources.Load<GameObject>("ParticleCollider"));
-                MeshFilter meshFilter = go.GetComponent<MeshFilter>();
-                MeshCollider meshCollider = go.GetComponent<MeshCollider>();
-                Renderer rend = go.GetComponent<Renderer>();
-                rend.material = particleSystemRenderer.material;
-
-                switch (particleSystemRenderer.renderMode)
-                {
-                    case ParticleSystemRenderMode.Billboard:
-                        break;
-                    case ParticleSystemRenderMode.Mesh:
-                        meshFilter.mesh = particleSystemRenderer.mesh;
-                        meshCollider.sharedMesh = particleSystemRenderer.mesh;
-                        break;
-                    default:
-                        Debug.LogError("Unsupported render mode.", this);
-                        break;
-                }
-
-                ParticleCollider newParticleCollider = go.AddComponent<ParticleCollider>();
-                newParticleCollider.particle = particles[i];
-                newParticleCollider.particleSys = particleSys;
-
-                particleColliders.Add(newParticleCollider);
-            }
+            CreateParticleColliders();
         }
     }
+
 
     public void Play()
     {
@@ -199,69 +79,170 @@ public class ParticleCollisionHelper : MonoBehaviour
             isPaused = false;
             particleSys.Play(true);
 
-            foreach (ParticleCollider curParticleCollider in particleColliders)
+            ClearParticleColliders();
+        }
+    }
+
+    #endregion
+
+
+    #region Methods (private)
+
+    private void CreateParticleColliders()
+    {
+        particles = new ParticleSystem.Particle[particleSys.particleCount];
+        int particleCount = particleSys.GetParticles(particles);
+
+        for (int i = 0; i < particleCount; i++)
+        {
+            GameObject go = Instantiate(Resources.Load<GameObject>("ParticleCollider"));
+            MeshFilter meshFilter = go.GetComponent<MeshFilter>();
+            MeshCollider meshCollider = go.GetComponent<MeshCollider>();
+            Renderer rend = go.GetComponent<Renderer>();
+            rend.material = particleSystemRenderer.material;
+
+            switch (particleSystemRenderer.renderMode)
             {
-                GameObject curGO = curParticleCollider.gameObject;
-                Destroy(curGO);
+                case ParticleSystemRenderMode.Billboard:
+                    break;
+                case ParticleSystemRenderMode.Mesh:
+                    meshFilter.mesh = particleSystemRenderer.mesh;
+                    meshCollider.sharedMesh = particleSystemRenderer.mesh;
+                    break;
+                default:
+                    Debug.LogError("Unsupported render mode.", this);
+                    break;
             }
 
-            particleColliders.Clear();
+            ParticleCollider newParticleCollider = go.AddComponent<ParticleCollider>();
+            newParticleCollider.particle = particles[i];
+            newParticleCollider.particleSys = particleSys;
+
+            particleColliders.Add(newParticleCollider);
         }
     }
 
-    void OnDrawGizmos()
+    private void ClearParticleColliders()
     {
-        if (isPaused)
+        foreach (ParticleCollider curParticleCollider in particleColliders)
         {
-            /// Draw bounds based on <see cref="particleColliders"/> 
-            Gizmos.color = Color.green;
-            Bounds bounds = BoundsHelper.GetGameObjectListBounds(particleColliders.Select(x => x.gameObject).ToList(), this.transform.position);
-            Gizmos.DrawWireCube(bounds.center, bounds.size);
+            GameObject curGO = curParticleCollider.gameObject;
+            Destroy(curGO);
+        }
+
+        particleColliders.Clear();
+    }
+
+    private void ReconstructParticleSystem()
+    {
+        foreach (ParticleCollider curParticleCollider in particleColliders)
+        {
+            GameObject curGO = curParticleCollider.gameObject;
+            ParticleSystem.Particle curParticle = curParticleCollider.particle;
+
+            float rotationCorrection = 1f;
+            Vector3 pivot = particleSystemRenderer.pivot;
+            Vector3 size = curParticle.GetCurrentSize3D(particleSys);
+
+            // Get hierarchy scale
+            Transform curParent = this.transform;
+            float uniformScale = 1f;
+            while (curParent != null)
+            {
+                uniformScale *= curParent.localScale.x;
+                curParent = curParent.parent;
+            }
+
+            // Apply position
+            switch (particleSys.main.simulationSpace)
+            {
+                case ParticleSystemSimulationSpace.Local:
+                    curGO.transform.SetParent(particleSys.gameObject.transform);
+                    curGO.transform.localPosition = curParticle.position;
+
+                    pivot *= uniformScale;
+                    break;
+                case ParticleSystemSimulationSpace.World:
+                    curGO.transform.SetParent(null);
+                    curGO.transform.position = curParticle.position;
+
+                    size *= uniformScale;
+                    break;
+            }
+
+            switch (particleSystemRenderer.renderMode)
+            {
+                case ParticleSystemRenderMode.Billboard:
+                    // Billboard to camera
+                    curGO.transform.LookAt(curGO.transform.position + cam.transform.rotation * Vector3.forward, cam.transform.rotation * Vector3.up);
+
+                    rotationCorrection = -1f;
+                    break;
+                case ParticleSystemRenderMode.Mesh:
+                    curGO.transform.rotation = Quaternion.identity;
+
+                    // For mesh pivots, Z is Y and Y is Z
+                    pivot.z = particleSystemRenderer.pivot.y * -1f;
+                    pivot.y = particleSystemRenderer.pivot.z * -1f;
+
+                    pivot *= curParticle.GetCurrentSize(particleSys);
+                    break;
+                default:
+                    Debug.LogError("Unsupported render mode.", this);
+                    break;
+            }
+
+            // Apply rotation
+            curGO.transform.Rotate(new Vector3(curParticle.rotation3D.x, curParticle.rotation3D.y, curParticle.rotation3D.z * rotationCorrection));
+
+            // Apply scale
+            curGO.transform.localScale = size;
+
+            // Apply pivot
+            pivot = new Vector3(pivot.x * size.x, pivot.y * size.y, pivot.z * size.z);
+            curGO.transform.position += (curGO.transform.right * pivot.x);
+            curGO.transform.position += (curGO.transform.up * pivot.y);
+            curGO.transform.position += (curGO.transform.forward * pivot.z * -1f);
         }
     }
-}
 
-
-public static class Extensions
-{
-    /// <summary>
-    /// From this Unity support article:
-    /// https://support.unity3d.com/hc/en-us/articles/206486626-How-can-I-get-pixels-from-unreadable-textures-
-    /// </summary>
-    /// <param name="texture"></param>
-    public static Color GetPixelForced(this Texture2D texture, int x, int y)
+    private void TestSelection()
     {
-        // Create a temporary RenderTexture of the same size as the texture
-        RenderTexture tmp = RenderTexture.GetTemporary(
-                            texture.width,
-                            texture.height,
-                            0,
-                            RenderTextureFormat.Default,
-                            RenderTextureReadWrite.Linear);
+        // Selection (accounts for transparency)
+        if (Input.GetMouseButtonDown(0))
+        {
+            RaycastHit hit;
+            if (!Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hit))
+                return;
 
-        // Blit the pixels on texture to the RenderTexture
-        Graphics.Blit(texture, tmp);
+            ParticleCollider hitParticleCollider = hit.transform.gameObject.GetComponent<ParticleCollider>();
 
-        // Backup the currently set RenderTexture
-        RenderTexture previous = RenderTexture.active;
+            if (hitParticleCollider != null && hitParticleCollider.particleSys == particleSys)
+            {
+                Renderer rend = hit.transform.GetComponent<Renderer>();
+                MeshCollider meshCollider = hit.collider as MeshCollider;
+                meshCollider.convex = false;
 
-        // Set the current RenderTexture to the temporary one we created
-        RenderTexture.active = tmp;
+                if (rend == null || rend.sharedMaterial == null || rend.sharedMaterial.mainTexture == null || meshCollider == null)
+                {
+                    Debug.Log("HIT! " + hitParticleCollider.particleSys.name, this);
+                    return;
+                }
 
-        // Create a new readable Texture2D to copy the pixels to it
-        Texture2D myTexture2D = new Texture2D(texture.width, texture.height);
+                Texture2D tex = rend.material.mainTexture as Texture2D;
+                Vector2 pixelUV = hit.textureCoord;
+                pixelUV.x *= tex.width;
+                pixelUV.y *= tex.height;
 
-        // Copy the pixels from the RenderTexture to the new Texture
-        myTexture2D.ReadPixels(new Rect(0, 0, tmp.width, tmp.height), 0, 0);
-        myTexture2D.Apply();
-
-        // Reset the active RenderTexture
-        RenderTexture.active = previous;
-
-        // Release the temporary RenderTexture
-        RenderTexture.ReleaseTemporary(tmp);
-
-        // "myTexture2D" now has the same pixels from "texture" and it's readable.
-        return myTexture2D.GetPixel(x, y);
+                Color hitColor = tex.GetPixelForced((int)pixelUV.x, (int)pixelUV.y);
+                Debug.Log("Raycast hit color: " + hitColor, this);
+                if (hitColor.a > hitTestAlphaCutoff)
+                {
+                    Debug.Log("HIT! " + hitParticleCollider.particleSys.name, this);
+                }
+            }
+        }
     }
+
+    #endregion
 }
