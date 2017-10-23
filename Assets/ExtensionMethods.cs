@@ -47,4 +47,17 @@ public static class Extensions
         // "myTexture2D" now has the same pixels from "texture" and it's readable.
         return myTexture2D.GetPixel(x, y);
     }
+
+    public static Vector3 HierarchyScale(this Transform transform)
+    {
+        Transform curParent = transform;
+        Vector3 hierarchyScale = Vector3.one;
+        while (curParent != null)
+        {
+            hierarchyScale = Vector3.Scale(hierarchyScale, curParent.localScale);
+            curParent = curParent.parent;
+        }
+
+        return hierarchyScale;
+    }
 }
