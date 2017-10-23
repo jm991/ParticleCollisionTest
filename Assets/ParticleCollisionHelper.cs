@@ -9,17 +9,47 @@ using System.Linq;
 /// </summary>
 public class ParticleCollisionHelper : MonoBehaviour
 {
-    public bool isPaused = false;
-    public Camera cam;
-    public float hitTestAlphaCutoff = 0;
-    public List<ParticleSystemCollider> particleSystemColliders;
+    #region Variables (private)
 
-    public class ParticleSystemCollider
+    public Camera cam;
+
+    [SerializeField]
+    private float hitTestAlphaCutoff = 0;
+
+    [SerializeField]
+    [ReadOnly]
+    private bool isPaused = false;
+    [SerializeField]
+    [ReadOnly]
+    private List<ParticleSystemCollider> particleSystemColliders;
+
+    #endregion
+
+
+    #region Classes
+
+    [System.Serializable]
+    private class ParticleSystemCollider
     {
-        public ParticleSystem particleSys;
-        public ParticleSystemRenderer particleSystemRenderer;
-        public List<ParticleCollider> particleColliders;
+        #region Variables (private)
+
         public Camera cam;
+
+        [SerializeField]
+        [ReadOnly]
+        private ParticleSystem particleSys;
+        [SerializeField]
+        [ReadOnly]
+        private List<ParticleCollider> particleColliders;
+        
+        private ParticleSystemRenderer particleSystemRenderer;
+
+        #endregion
+
+
+        #region Properties (public)
+
+        public ParticleSystem ParticleSys { get { return particleSys; } }
 
         public Bounds Bounds
         {
@@ -28,6 +58,11 @@ public class ParticleCollisionHelper : MonoBehaviour
                 return BoundsHelper.GetGameObjectListBounds(particleColliders.Select(x => x.gameObject).ToList(), particleSys.transform.position);
             }
         }
+
+        #endregion
+
+
+        #region Constructor
 
         public ParticleSystemCollider(ParticleSystem particleSys)
         {
@@ -38,7 +73,12 @@ public class ParticleCollisionHelper : MonoBehaviour
 
             cam = Camera.main;
         }
-        
+
+        #endregion
+
+
+        #region Methods (public)
+
         public void CreateParticleColliders()
         {
             ParticleSystem.Particle[] particles = new ParticleSystem.Particle[particleSys.particleCount];
@@ -67,10 +107,9 @@ public class ParticleCollisionHelper : MonoBehaviour
                 }
 
                 ParticleCollider newParticleCollider = go.AddComponent<ParticleCollider>();
-                newParticleCollider.particle = particles[i];
-                newParticleCollider.particleSys = particleSys;
+                newParticleCollider.Init(particles[i], particleSys);
 
-                particleColliders.Add(newParticleCollider);
+            particleColliders.Add(newParticleCollider);
             }
         }
 
@@ -90,7 +129,7 @@ public class ParticleCollisionHelper : MonoBehaviour
             foreach (ParticleCollider curParticleCollider in particleColliders)
             {
                 GameObject curGO = curParticleCollider.gameObject;
-                ParticleSystem.Particle curParticle = curParticleCollider.particle;
+                ParticleSystem.Particle curParticle = curParticleCollider.Particle;
 
                 float rotationCorrection = 1f;
                 Vector3 pivot = particleSystemRenderer.pivot;
@@ -151,7 +190,11 @@ public class ParticleCollisionHelper : MonoBehaviour
                 curGO.transform.position += (curGO.transform.forward * pivot.z * -1f);
             }
         }
+
+        #endregion
     }
+
+    #endregion
 
 
     #region Unity event functions
@@ -218,8 +261,7 @@ public class ParticleCollisionHelper : MonoBehaviour
             }
         }
     }
-
-
+    
     public void Play()
     {
         if (this.gameObject.activeSelf)
@@ -228,7 +270,7 @@ public class ParticleCollisionHelper : MonoBehaviour
 
             foreach (ParticleSystemCollider curPSC in particleSystemColliders)
             {
-                curPSC.particleSys.Play(true);
+                curPSC.ParticleSys.Play(true);
                 
                 curPSC.ClearParticleColliders();
             }
@@ -261,7 +303,7 @@ public class ParticleCollisionHelper : MonoBehaviour
 
                 if (rend == null || rend.sharedMaterial == null || rend.sharedMaterial.mainTexture == null || meshCollider == null)
                 {
-                    Debug.Log("HIT! " + hitParticleCollider.particleSys.name, this);
+                    Debug.Log("HIT! " + hitParticleCollider.ParticleSys.name, this);
                     return;
                 }
 
@@ -274,7 +316,7 @@ public class ParticleCollisionHelper : MonoBehaviour
                 Debug.Log("Raycast hit color: " + hitColor, this);
                 if (hitColor.a > hitTestAlphaCutoff)
                 {
-                    Debug.Log("HIT! " + hitParticleCollider.particleSys.name, this);
+                    Debug.Log("HIT! " + hitParticleCollider.ParticleSys.name, this);
                 }
             }
         }

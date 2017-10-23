@@ -2,12 +2,33 @@
 
 public class ParticleCollider : MonoBehaviour
 {
-    public ParticleSystem.Particle particle;
-    public ParticleSystem particleSys;
+    #region Variables (private)
 
-    public ParticleCollider(ParticleSystem.Particle particle, ParticleSystem particleSys)
+    [SerializeField]
+    [ReadOnly]
+    private ParticleSystem.Particle particle;
+    [SerializeField]
+    [ReadOnly]
+    private ParticleSystem particleSys;
+
+    #endregion
+
+
+    #region Properties (public)
+
+    public ParticleSystem.Particle Particle { get { return particle; } }
+    public ParticleSystem ParticleSys { get { return particleSys; } }
+
+    #endregion
+
+
+    #region Methods (public)
+
+    public void Init(ParticleSystem.Particle particle, ParticleSystem particleSys)
     {
         this.particle = particle;
         this.particleSys = particleSys;
     }
+
+    #endregion
 }
