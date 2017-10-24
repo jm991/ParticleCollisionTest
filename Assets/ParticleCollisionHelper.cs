@@ -188,6 +188,45 @@ public class ParticleCollisionHelper : MonoBehaviour
                 curGO.transform.position += (curGO.transform.right * pivot.x);
                 curGO.transform.position += (curGO.transform.up * pivot.y);
                 curGO.transform.position += (curGO.transform.forward * pivot.z * -1f);
+
+                // Apply texture sheet animation
+                ParticleSystem.TextureSheetAnimationModule texModule = particleSys.textureSheetAnimation;
+                if (texModule.enabled)
+                {
+                    float x = texModule.numTilesX;
+                    float y = texModule.numTilesY;
+                    float totalFrames = x * y;
+
+                    switch (texModule.animation)
+                    {
+                        case ParticleSystemAnimationType.WholeSheet:
+                            float curParticleLifeNormalized = (curParticle.startLifetime - curParticle.remainingLifetime) / curParticle.startLifetime;
+
+                            float startFrame = Mathf.Floor(texModule.startFrame.Evaluate(particleSys.time));
+                            float animation = texModule.frameOverTime.Evaluate(curParticleLifeNormalized);// * totalFrames;
+
+                            if (Input.GetMouseButtonDown(0))
+                            {
+                                int i = 0;
+                                i++;
+                                Debug.Log("clicked");
+                            }
+
+                            float frame = startFrame + animation;
+                            
+
+                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(1 / x, 1 / y);
+                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureOffset = new Vector2((Mathf.Floor(frame * totalFrames)) / totalFrames, 0);
+
+                            break;
+                        case ParticleSystemAnimationType.SingleRow:
+                            Debug.Log("Single Row texture sheet animations currently not supported.");
+                            break;
+                        default:
+                            Debug.Log("Unsupported texture sheet animation animation type.");
+                            break;
+                    }
+                }
             }
         }
 
@@ -311,6 +350,8 @@ public class ParticleCollisionHelper : MonoBehaviour
                 Vector2 pixelUV = hit.textureCoord;
                 pixelUV.x *= tex.width;
                 pixelUV.y *= tex.height;
+                
+                // TODO: texture anim
 
                 Color hitColor = tex.GetPixelForced((int)pixelUV.x, (int)pixelUV.y);
                 Debug.Log("Raycast hit color: " + hitColor, this);
