@@ -159,7 +159,7 @@ public class ParticleCollisionHelper : MonoBehaviour
                 {
                     case ParticleSystemRenderMode.Billboard:
                         // Billboard to camera
-                        curGO.transform.LookAt(curGO.transform.position + cam.transform.rotation * Vector3.forward, cam.transform.rotation * Vector3.up);
+                        curGO.transform.LookAt(curGO.transform.position + cam.transform.rotation * Vector3.back, cam.transform.rotation * Vector3.up);
 
                         rotationCorrection = -1f;
                         break;
@@ -193,9 +193,9 @@ public class ParticleCollisionHelper : MonoBehaviour
                 ParticleSystem.TextureSheetAnimationModule texModule = particleSys.textureSheetAnimation;
                 if (texModule.enabled)
                 {
-                    float x = texModule.numTilesX;
-                    float y = texModule.numTilesY;
-                    float totalFrames = x * y;
+                    float columns = texModule.numTilesX;
+                    float rows = texModule.numTilesY;
+                    float totalFrames = columns * rows;
 
                     switch (texModule.animation)
                     {
@@ -203,20 +203,14 @@ public class ParticleCollisionHelper : MonoBehaviour
                             float curParticleLifeNormalized = (curParticle.startLifetime - curParticle.remainingLifetime) / curParticle.startLifetime;
 
                             float startFrame = Mathf.Floor(texModule.startFrame.Evaluate(particleSys.time));
-                            float animation = texModule.frameOverTime.Evaluate(curParticleLifeNormalized);// * totalFrames;
+                            float animation = texModule.frameOverTime.Evaluate(curParticleLifeNormalized);
 
-                            if (Input.GetMouseButtonDown(0))
-                            {
-                                int i = 0;
-                                i++;
-                                Debug.Log("clicked");
-                            }
+                            float currentFrame = startFrame + Mathf.Floor(animation * totalFrames);
+                            float currentColumn = currentFrame % columns;
+                            float currentRow = Mathf.Floor(currentFrame / columns);
 
-                            float frame = startFrame + animation;
-                            
-
-                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(1 / x, 1 / y);
-                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureOffset = new Vector2((Mathf.Floor(frame * totalFrames)) / totalFrames, 0);
+                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(1 / columns, 1 / rows);
+                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureOffset = new Vector2(currentColumn / columns, (rows - 1 - currentRow) / rows);
 
                             break;
                         case ParticleSystemAnimationType.SingleRow:
