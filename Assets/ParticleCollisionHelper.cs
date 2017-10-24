@@ -188,7 +188,7 @@ public class ParticleCollisionHelper : MonoBehaviour
                 {
                     case ParticleSystemRenderMode.Billboard:
                         // Billboard to camera
-                        curGO.transform.LookAt(curGO.transform.position + cam.transform.rotation * Vector3.back, cam.transform.rotation * Vector3.up);
+                        curGO.transform.LookAt(curGO.transform.position + cam.transform.rotation * Vector3.forward, cam.transform.rotation * Vector3.up);
 
                         rotationCorrection = -1f;
                         break;

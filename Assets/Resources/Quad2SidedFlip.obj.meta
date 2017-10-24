@@ -1,17 +1,17 @@
 fileFormatVersion: 2
-guid: 77f46b676d4ffa44f9408f80952beeb2
-timeCreated: 1508548730
+guid: 5fb5b60ebb7a9464ab1c0caf3ef250d3
+timeCreated: 1508876475
 licenseType: Pro
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: Default
+    100000: Quad2Sided:Default
     100002: //RootNode
-    400000: Default
+    400000: Quad2Sided:Default
     400002: //RootNode
-    2300000: Default
-    3300000: Default
-    4300000: Default
+    2300000: Quad2Sided:Default
+    3300000: Quad2Sided:Default
+    4300000: Quad2Sided:Default
   materials:
     importMaterials: 0
     materialName: 0
