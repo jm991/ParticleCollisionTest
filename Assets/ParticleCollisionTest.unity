@@ -6319,7 +6319,7 @@ MonoBehaviour:
   hitTestAlphaCutoff: 0
   isPaused: 0
   particleSystemColliders: []
-  debugImg: {fileID: 0}
+  debugImg: {fileID: 2106774836}
 --- !u!199 &1062035451
 ParticleSystemRenderer:
   serializedVersion: 3
@@ -6426,7 +6426,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 1020036930
+  randomSeed: 1116693772
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -9368,7 +9368,7 @@ ParticleSystem:
   moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 1603652533
+  randomSeed: -1626440231
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -12202,7 +12202,7 @@ MonoBehaviour:
   hitTestAlphaCutoff: 0
   isPaused: 0
   particleSystemColliders: []
-  debugImg: {fileID: 0}
+  debugImg: {fileID: 2106774836}
 --- !u!1 &1291887730
 GameObject:
   m_ObjectHideFlags: 0
@@ -12404,7 +12404,7 @@ ParticleSystem:
   moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: -1692885371
+  randomSeed: 1809568966
   InitialModule:
     serializedVersion: 3
     enabled: 1

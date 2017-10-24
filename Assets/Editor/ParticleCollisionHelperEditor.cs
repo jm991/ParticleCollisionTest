@@ -13,12 +13,12 @@ public class ParticleCollisionHelperEditor : Editor
         // Show default inspector property editor
         DrawDefaultInspector();
 
-        if (GUILayout.Button("Play"))
+        if (GUILayout.Button("Play") && EditorApplication.isPlaying)
         {
             phc.Play();
         }
 
-        if (GUILayout.Button("Pause"))
+        if (GUILayout.Button("Pause") && EditorApplication.isPlaying)
         {
             phc.Pause();
         }
