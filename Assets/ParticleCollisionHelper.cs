@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 
 /// <summary>
 /// TODO:
@@ -23,10 +24,38 @@ public class ParticleCollisionHelper : MonoBehaviour
     [ReadOnly]
     private List<ParticleSystemCollider> particleSystemColliders;
 
+    public RawImage debugImg;
+
     #endregion
 
 
     #region Classes
+
+    private struct SubUVTextureInfo
+    {
+        public float columns;
+        public float rows;
+        public float currentColumn;
+        public float currentRow;
+        public float currentFrame;
+        public float totalFrames;
+
+        public SubUVTextureInfo(ParticleSystem.TextureSheetAnimationModule texModule, ParticleSystem.Particle curParticle)
+        {
+            columns = texModule.numTilesX;
+            rows = texModule.numTilesY;
+            totalFrames = columns * rows;
+
+            float curParticleLifeNormalized = (curParticle.startLifetime - curParticle.remainingLifetime) / curParticle.startLifetime;
+
+            float startFrame = texModule.startFrame.Evaluate(curParticleLifeNormalized);    // TODO: might be particleSys.time and might need Mathf.Floor()
+            float animation = texModule.frameOverTime.Evaluate(curParticleLifeNormalized);
+
+            currentFrame = startFrame + Mathf.Floor(animation * totalFrames);
+            currentColumn = currentFrame % columns;
+            currentRow = Mathf.Floor(currentFrame / columns);
+        }
+    }
 
     [System.Serializable]
     private class ParticleSystemCollider
@@ -193,31 +222,22 @@ public class ParticleCollisionHelper : MonoBehaviour
                 ParticleSystem.TextureSheetAnimationModule texModule = particleSys.textureSheetAnimation;
                 if (texModule.enabled)
                 {
-                    float columns = texModule.numTilesX;
-                    float rows = texModule.numTilesY;
-                    float totalFrames = columns * rows;
+                    SubUVTextureInfo subUV = new SubUVTextureInfo(texModule, curParticle);
 
                     switch (texModule.animation)
                     {
                         case ParticleSystemAnimationType.WholeSheet:
-                            float curParticleLifeNormalized = (curParticle.startLifetime - curParticle.remainingLifetime) / curParticle.startLifetime;
-
-                            float startFrame = Mathf.Floor(texModule.startFrame.Evaluate(particleSys.time));
-                            float animation = texModule.frameOverTime.Evaluate(curParticleLifeNormalized);
-
-                            float currentFrame = startFrame + Mathf.Floor(animation * totalFrames);
-                            float currentColumn = currentFrame % columns;
-                            float currentRow = Mathf.Floor(currentFrame / columns);
-
-                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(1 / columns, 1 / rows);
-                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureOffset = new Vector2(currentColumn / columns, (rows - 1 - currentRow) / rows);
+                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(1 / subUV.columns, 1 / subUV.rows);
+                            curParticleCollider.gameObject.GetComponent<MeshRenderer>().material.mainTextureOffset = new Vector2(subUV.currentColumn / subUV.columns, (subUV.rows - subUV.currentRow - 1) / subUV.rows);
 
                             break;
                         case ParticleSystemAnimationType.SingleRow:
                             Debug.Log("Single Row texture sheet animations currently not supported.");
+
                             break;
                         default:
                             Debug.Log("Unsupported texture sheet animation animation type.");
+
                             break;
                     }
                 }
@@ -342,13 +362,26 @@ public class ParticleCollisionHelper : MonoBehaviour
 
                 Texture2D tex = rend.material.mainTexture as Texture2D;
                 Vector2 pixelUV = hit.textureCoord;
+
+                // Apply texture sheet animation offset
+                ParticleSystem.TextureSheetAnimationModule texModule = hitParticleCollider.ParticleSys.textureSheetAnimation;
+                if (texModule.enabled)
+                {
+                    SubUVTextureInfo subUV = new SubUVTextureInfo(texModule, hitParticleCollider.Particle);
+                    pixelUV.x = (subUV.currentColumn / subUV.columns) + (pixelUV.x / subUV.columns);
+                    pixelUV.y = (subUV.currentRow / subUV.rows) + ((1 - pixelUV.y) / subUV.rows);
+                    pixelUV.y = 1 - pixelUV.y;
+                }
+
                 pixelUV.x *= tex.width;
                 pixelUV.y *= tex.height;
-                
-                // TODO: texture anim
 
                 Color hitColor = tex.GetPixelForced((int)pixelUV.x, (int)pixelUV.y);
                 Debug.Log("Raycast hit color: " + hitColor, this);
+                if (debugImg != null)
+                {
+                    debugImg.color = hitColor;
+                }
                 if (hitColor.a > hitTestAlphaCutoff)
                 {
                     Debug.Log("HIT! " + hitParticleCollider.ParticleSys.name, this);
