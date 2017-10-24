@@ -7,11 +7,16 @@ ModelImporter:
   fileIDToRecycleName:
     100000: Default
     100002: //RootNode
+    100004: Quad2Sided:Default
     400000: Default
     400002: //RootNode
+    400004: Quad2Sided:Default
     2300000: Default
+    2300002: Quad2Sided:Default
     3300000: Default
+    3300002: Quad2Sided:Default
     4300000: Default
+    4300002: Quad2Sided:Default
   materials:
     importMaterials: 0
     materialName: 0
