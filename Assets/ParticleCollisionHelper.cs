@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// TODO:
@@ -11,6 +12,8 @@ using UnityEngine.UI;
 public class ParticleCollisionHelper : MonoBehaviour
 {
     #region Variables (private)
+
+    private const string TINT_COLOR = "_TintColor";
 
     public Camera cam;
 
@@ -125,6 +128,7 @@ public class ParticleCollisionHelper : MonoBehaviour
                 switch (particleSystemRenderer.renderMode)
                 {
                     case ParticleSystemRenderMode.Billboard:
+                        rend.material.SetColor(TINT_COLOR, particleSystemRenderer.material.GetColor(TINT_COLOR));
                         break;
                     case ParticleSystemRenderMode.Mesh:
                         meshFilter.mesh = particleSystemRenderer.mesh;
@@ -241,6 +245,12 @@ public class ParticleCollisionHelper : MonoBehaviour
                             break;
                     }
                 }
+
+                // Apply color
+                Color particleColor = curParticle.GetCurrentColor(particleSys);
+                Material mat = curGO.GetComponent<MeshRenderer>().material;
+                Color matColor = particleSystemRenderer.material.GetColor(TINT_COLOR);
+                curGO.GetComponent<MeshRenderer>().material.SetColor(TINT_COLOR, particleColor * matColor);
             }
         }
 
